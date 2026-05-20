@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Ana Sayfa{% endblock %}
+
+{% block content %}
+<section class="hero" id="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title">
+            <span class="hero-title-line">Kitap Fiyatlarını</span>
+            <span class="hero-title-line hero-gradient">Karşılaştırın</span>
+        </h1>
+        <p class="hero-subtitle">
+            Birden fazla kaynaktan anlık fiyat karşılaştırması yapın,
+            en uygun fiyatı saniyeler içinde bulun.
+        </p>
+
+        <form action="{{ url_for('search') }}" method="GET" class="search-form" id="search-form">
+            <div class="search-wrapper">
+                <span class="search-icon">🔍</span>
+                <input type="text" name="q" class="search-input" id="search-input"
+                       placeholder="Kitap adı veya yazar adı yazın..."
+                       autocomplete="off" required>
+                <button type="submit" class="search-btn" id="search-btn">
+                    <span class="btn-text">Ara</span>
+                    <span class="btn-loader" hidden>⏳</span>
+                </button>
+            </div>
+        </form>
+
+        <div class="popular-searches">
+            <span class="popular-label">Popüler:</span>
+            <a href="{{ url_for('search', q='Kürk Mantolu Madonna') }}" class="popular-tag">Kürk Mantolu Madonna</a>
+            <a href="{{ url_for('search', q='1984') }}" class="popular-tag">1984</a>
+            <a href="{{ url_for('search', q='Simyacı') }}" class="popular-tag">Simyacı</a>
+            <a href="{{ url_for('search', q='Suç ve Ceza') }}" class="popular-tag">Suç ve Ceza</a>
+            <a href="{{ url_for('search', q='Küçük Prens') }}" class="popular-tag">Küçük Prens</a>
+        </div>
+    </div>
+
+    <div class="hero-stats">
+        <div class="stat-card">
+            <span class="stat-icon">🏪</span>
+            <span class="stat-number stat-number-animate" data-target="3" data-original-text="3">0</span>
+            <span class="stat-label">Kaynak Site</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-icon">📖</span>
+            <span class="stat-number stat-number-animate" data-target="31" data-original-text="30+">0</span>
+            <span class="stat-label">Kitap Veritabanı</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-icon">⚡</span>
+            <span class="stat-number stat-number-animate" data-target="3" data-original-text="&lt;3s">0</span>
+            <span class="stat-label">Anlık Karşılaştırma</span>
+        </div>
+    </div>
+</section>
+
+{% if recent_searches %}
+<section class="recent-section">
+    <h2 class="section-title">📋 Son Aramalarınız</h2>
+    <div class="recent-list">
+        {% for item in recent_searches %}
+        <a href="{{ url_for('search', q=item.query) }}" class="recent-item">
+            <span class="recent-query">{{ item.query }}</span>
+            <span class="recent-count">{{ item.result_count }} sonuç</span>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<section class="how-it-works">
+    <h2 class="section-title">🚀 Nasıl Çalışır?</h2>
+    <div class="steps-grid">
+        <div class="step-card">
+            <div class="step-number">1</div>
+            <div class="step-icon">🔍</div>
+            <h3>Kitap Arayın</h3>
+            <p>Kitap adı veya yazar adı girerek arama yapın.</p>
+        </div>
+        <div class="step-card">
+            <div class="step-number">2</div>
+            <div class="step-icon">🌐</div>
+            <h3>Fiyatları Toplayalım</h3>
+            <p>3 farklı kaynaktan anlık fiyat bilgilerini çekiyoruz.</p>
+        </div>
+        <div class="step-card">
+            <div class="step-number">3</div>
+            <div class="step-icon">📊</div>
+            <h3>Karşılaştırın</h3>
+            <p>Fiyatları grafik ve tablo ile karşılaştırın.</p>
+        </div>
+        <div class="step-card">
+            <div class="step-number">4</div>
+            <div class="step-icon">💰</div>
+            <h3>Tasarruf Edin</h3>
+            <p>En ucuz fiyatı bulun, alarm kurun, favorilere ekleyin.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

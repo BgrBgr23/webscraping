@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Arama Geçmişi{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <div class="page-header">
+        <h1 class="page-title">📋 Arama Geçmişi</h1>
+        {% if searches %}
+        <button class="btn-danger" onclick="clearHistory()" id="clear-history-btn">🗑️ Geçmişi Temizle</button>
+        {% endif %}
+    </div>
+
+    {% if searches %}
+    <div class="table-container">
+        <table class="data-table" id="history-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Arama Sorgusu</th>
+                    <th>Sonuç Sayısı</th>
+                    <th>Tarih</th>
+                    <th>İşlem</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in searches %}
+                <tr class="table-row-animate" style="animation-delay: {{ loop.index * 0.05 }}s">
+                    <td class="td-index">{{ loop.index }}</td>
+                    <td class="td-query">
+                        <a href="{{ url_for('search', q=item.query) }}" class="table-link">
+                            {{ item.query }}
+                        </a>
+                    </td>
+                    <td>
+                        <span class="count-badge">{{ item.result_count }}</span>
+                    </td>
+                    <td class="td-date">
+                        {% if item.searched_at and item.searched_at|length >= 16 %}
+                            {{ item.searched_at[:10] }}<br>
+                            <span style="opacity:0.6">{{ item.searched_at[11:16] }}</span>
+                        {% elif item.searched_at %}
+                            {{ item.searched_at }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('search', q=item.query) }}" class="action-btn action-retry" title="Tekrar Ara">
+                            🔄
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <h2>Henüz arama yapmadınız</h2>
+        <p>Kitap aramaya başlayın, geçmişiniz burada görünecek.</p>
+        <a href="{{ url_for('index') }}" class="btn-primary">Aramaya Başla</a>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

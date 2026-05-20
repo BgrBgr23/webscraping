@@ -1,0 +1,8 @@
+Flask>=3.0.0
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+pandas>=2.0.0
+matplotlib>=3.8.0
+lxml>=5.0.0
+# Google Books API ve diğer servislerin stabil çalışması için gerekebilir
+urllib3>=2.0.0

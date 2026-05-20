@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}{{ query }} — Sonuçlar{% endblock %}
+
+{% block content %}
+<section class="results-page">
+    <div class="results-header">
+        <h1 class="results-title">
+            "<span class="highlight">{{ query }}</span>" için sonuçlar
+        </h1>
+
+        <form action="{{ url_for('search') }}" method="GET" class="mini-search">
+            <input type="text" name="q" class="mini-search-input" value="{{ query }}" placeholder="Yeni arama...">
+            <button type="submit" class="mini-search-btn">🔍</button>
+        </form>
+    </div>
+
+    {% if results %}
+    <div class="stats-bar">
+        <div class="stat-pill">
+            <span class="stat-pill-icon">📦</span>
+            <span>{{ stats.total }} sonuç</span>
+        </div>
+        <div class="stat-pill">
+            <span class="stat-pill-icon">🏪</span>
+            <span>{{ stats.sources }} kaynak</span>
+        </div>
+        <div class="stat-pill best-price">
+            <span class="stat-pill-icon">💰</span>
+            <span>En Ucuz (Kargo Dahil): {{ stats.min_price }} ₺</span>
+        </div>
+        <div class="stat-pill">
+            <span class="stat-pill-icon">📈</span>
+            <span>Ort: {{ stats.avg_price }} ₺</span>
+        </div>
+    </div>
+
+    {% if chart_base64 %}
+    <div class="chart-section">
+        <h2 class="section-title">📊 Fiyat Karşılaştırma Grafiği</h2>
+        <div class="chart-container">
+            <img src="data:image/png;base64,{{ chart_base64 }}" alt="Fiyat karşılaştırma grafiği" class="chart-image">
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="sort-controls">
+        <span class="sort-label">Sırala:</span>
+        <button class="sort-btn active" data-sort="price-asc" id="sort-price-asc">Fiyat ↑</button>
+        <button class="sort-btn" data-sort="price-desc" id="sort-price-desc">Fiyat ↓</button>
+        <button class="sort-btn" data-sort="name" id="sort-name">İsim A-Z</button>
+        <button class="sort-btn" data-sort="source" id="sort-source">Kaynak</button>
+    </div>
+
+    <div class="results-grid" id="results-grid">
+        {% for item in results %}
+        <div class="product-card" data-price="{{ item.toplam_fiyat }}" data-name="{{ item.name }}" data-source="{{ item.source }}">
+            
+            <div class="source-badge source-{{ item.source|replace(' ', '-')|lower }}">
+                {{ item.source }}
+            </div>
+
+            {% if item.toplam_fiyat == stats.min_price %}
+            <div class="best-badge">🏆 En Ucuz</div>
+            {% endif %}
+
+            <div class="book-cover">
+                {% if item.image_url %}
+                <img src="{{ item.image_url }}" alt="{{ item.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                {% set kapak_rengi = (loop.index * 47) % 360 %}
+                <div class="book-cover-inner" style="background: linear-gradient(135deg, hsl({{ kapak_rengi }}, 60%, 40%), hsl({{ (kapak_rengi + 60) % 360 }}, 70%, 30%));">
+                    <span class="book-initial">{{ item.name[0] if item.name else 'K' }}</span>
+                    <span class="book-cover-title">{{ item.name[:20] if item.name else '' }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="product-info">
+                <h3 class="product-name" title="{{ item.name }}">{{ item.name }}</h3>
+                <p class="product-author">{{ item.author }}</p>
+                
+                <div style="margin-top: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 0.5rem;">
+                    <div style="font-size: 0.9rem; opacity: 0.8;">Kitap: {{ "%.2f"|format(item.price) }} ₺</div>
+                    <div style="font-size: 0.85rem; opacity: 0.7; margin-bottom: 0.2rem;">
+                        Kargo: {% if item.kargo_ucreti == 0 %} <span style="color: #00B894; font-weight: bold;">Ücretsiz</span> {% else %} {{ "%.2f"|format(item.kargo_ucreti) }} ₺ {% endif %}
+                    </div>
+                    <div class="product-price" style="font-size: 1.3rem; font-weight: bold; color: #74B9FF;">
+                        {{ "%.2f"|format(item.toplam_fiyat) }} ₺
+                    </div>
+                </div>
+            </div>
+
+            <div class="product-actions">
+                <a href="{{ item.url }}" target="_blank" class="action-btn action-buy" title="Siteye Git">
+                    🛒 Satın Al
+                </a>
+                <button class="action-btn action-fav" title="Favorilere Ekle" data-name="{{ item.name }}"
+                    data-author="{{ item.author }}" data-price="{{ item.toplam_fiyat }}" data-source="{{ item.source }}"
+                    data-url="{{ item.url }}" data-image_url="{{ item.image_url if item.image_url else '' }}"
+                    onclick="addToFavoritesFromBtn(this)">
+                    ❤️
+                </button>
+                
+                <button class="action-btn action-alert" title="Fiyat Alarmı Kur" data-name="{{ item.name }}"
+                    data-author="{{ item.author }}" data-price="{{ item.toplam_fiyat }}" data-source="{{ item.source }}"
+                    data-url="{{ item.url }}" data-image_url="{{ item.image_url if item.image_url else '' }}" 
+                    onclick="openAlertModalFromBtn(this)">
+                    🔔
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="no-results">
+        <div class="no-results-icon">😔</div>
+        <h2>Sonuç Bulunamadı</h2>
+        <p>"{{ query }}" için hiçbir kaynakta sonuç bulunamadı.</p>
+        <a href="{{ url_for('index') }}" class="btn-primary">Ana Sayfaya Dön</a>
+    </div>
+    {% endif %}
+</section>
+
+<div class="modal-overlay" id="alert-modal" hidden>
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeAlertModal()">✕</button>
+        <h2 class="modal-title">🔔 Fiyat Alarmı Kur</h2>
+        <div class="modal-body">
+            <p class="modal-book-name" id="modal-book-name"></p>
+            <p class="modal-current-price">Mevcut fiyat: <strong id="modal-current-price"></strong></p>
+            <div class="modal-field">
+                <label for="target-price">Hedef Fiyat (₺)</label>
+                <input type="number" id="target-price" class="modal-input" step="0.01" min="0" placeholder="Örn: 35.00">
+            </div>
+            <p class="modal-hint">Fiyat bu seviyenin altına düştüğünde bildirilecektir.</p>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-secondary" onclick="closeAlertModal()">İptal</button>
+            <button class="btn-primary" onclick="submitAlert()" id="submit-alert-btn">Alarmı Kur</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
